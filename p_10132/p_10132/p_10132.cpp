@@ -4,9 +4,8 @@
 #include<limits>
 
 std::string calculate(std::vector<std::string>);
-bool isAllTrue(bool* , int);
-
-bool restCalculate(std::vector<std::string>, bool*, std::string, int);
+bool isAllTrue(std::vector<bool>&, int);
+bool restCalculate(std::vector<std::string>, std::vector<bool>&, std::string, int);
 
 int main() {
 	int testCase;
@@ -59,11 +58,7 @@ std::string calculate(std::vector<std::string> arr) {
 	int max = 0;
 	int min = std::numeric_limits<int>::max();
 
-	bool * visitInfo = new bool[arr.size()];
-
-	for (int i = 0; i < arr.size(); i++) {
-		visitInfo[i] = false;
-	}
+	std::vector<bool> visitInfo(arr.size());
 
 	for (auto i : arr) {
 		if (i.length() > max) max = i.length();
@@ -74,34 +69,28 @@ std::string calculate(std::vector<std::string> arr) {
 
 	std::string temp;
 
-	for (int i = 0; i < arr.size(); i++) {
-		
-		if (visitInfo[i] == false) {
-			visitInfo[i] = true;
-			for (int j = 0; j < arr.size(); j++) {
-				if (visitInfo[j] == false && L - arr[i].length() == arr[j].length()) {
-					visitInfo[j] = true;
-					temp = arr[i] + arr[j];
-					if (restCalculate(arr, visitInfo, temp, L)) { 
-						delete[] visitInfo; 
-						return temp; 
-					}
-					else {
-						visitInfo[j] = false;
-					}
-				}
+	visitInfo[0] = true;
+
+	for (int j = 1; j < arr.size(); j++) {
+		if (visitInfo[j] == false && L - arr[0].length() == arr[j].length()) {
+			visitInfo[j] = true;
+			temp = arr[0] + arr[j];
+			if (restCalculate(arr, visitInfo, temp, L)) {
+				return temp;
+			}
+			else {
 				visitInfo[j] = false;
 			}
-			visitInfo[i] = false;
 		}
-	}
-	delete[] visitInfo;
+		visitInfo[j] = false;
+		}
+
 
 	return temp;
 }
 
 
-bool restCalculate(std::vector<std::string> arr, bool* visitInfo, std::string temp, int L) {
+bool restCalculate(std::vector<std::string> arr, std::vector<bool>& visitInfo, std::string temp, int L) {
 
 	if (isAllTrue(visitInfo, arr.size())) return true;
 
@@ -110,24 +99,27 @@ bool restCalculate(std::vector<std::string> arr, bool* visitInfo, std::string te
 		if (visitInfo[i] == false) {
 			visitInfo[i] = true;
 			for (int j = 0; j < arr.size(); j++) {
-				if (visitInfo[j] == false && L - arr[i].length() == arr[j].length()) {
+				if (i != j && visitInfo[j] == false && L - arr[i].length() == arr[j].length()) {
 					visitInfo[j] = true;
 					if (temp == arr[i] + arr[j]) {
 						if(restCalculate(arr, visitInfo, temp, L)) return true;
+						else { 
+							visitInfo[j] = false;
+							return false;
+						}
 					}
 					else {
 						visitInfo[j] = false;
+						return false;
 					}
 				}
-				visitInfo[j] = false;
 			}
-			visitInfo[i] = false;
 		}
 	}
 	return false;
 }
 
-bool isAllTrue(bool * visitInfo, int length) {
+bool isAllTrue(std::vector<bool>& visitInfo, int length) {
 	for (int i = 0; i < length; i++) {
 		if (visitInfo[i] == false) return false;
 	}
